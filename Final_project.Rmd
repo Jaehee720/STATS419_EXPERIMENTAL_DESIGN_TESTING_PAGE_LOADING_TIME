@@ -1,0 +1,48 @@
+---
+title: "final_project_419"
+author: "Tyler Chun"
+date: "11/24/2021"
+output: pdf_document
+---
+```{r}
+
+df = read.csv("df.csv")
+
+
+df$Device = as.factor(df$Device)
+df$Speed = as.factor(df$Speed)
+df$Browser = as.factor(df$Browser)
+new_df = 
+data.frame(Device = rep(df$Device,3),
+Speed = rep(df$Speed,3),
+Browser = rep(df$Browser,3),
+Response = c(df$Replicate.1,df$Replicate.2,df$Replicate.3),replicate = as.factor(c(rep(1,18),rep(2,18),rep(3,18))))
+
+
+par(mfrow=c(2,3))
+plot(data= new_df, Response~ as.numeric(Device) + as.numeric(Speed)+as.numeric(Browser))
+plot(data= new_df, Response~ (Device) + (Speed)+(Browser))
+par(mfrow=c(1,1))
+m1 <-lm(data=new_df, Response~Device + Speed + Browser +
+          Device:Speed + Device:Browser + Speed:Browser +
+          replicate)
+summary(m1)
+
+anova(m1)
+
+plot(TukeyHSD(aov(m1)))
+
+TukeyHSD(aov(m1))
+
+plot(m1)
+
+
+y_bar = (df$Replicate.1 + df$Replicate.2 + df$Replicate.3)/3
+
+
+interaction.plot(df$Device, df$Speed, y_bar)
+interaction.plot(df$Device, df$Browser, y_bar)
+interaction.plot(df$Browser, df$Speed, y_bar)
+
+
+```
