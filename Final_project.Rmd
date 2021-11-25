@@ -4,19 +4,40 @@ author: "Tyler Chun"
 date: "11/24/2021"
 output: pdf_document
 ---
+
+## Approach: Remove point 8 and Treat Speed as numeric and Box-cox
+
+- Treat Speed as numeric
+
+- Transformation of response
+
 ```{r}
-
 df = read.csv("df.csv")
+# remove point 8
+# df <- df[-8,]
 
+# Do initial Analysis and fit model
+Response = c(df$Replicate.1,df$Replicate.2,df$Replicate.3)
 
+# Change Speed to original speed numbers
+df$Speed_f=as.factor(df$Speed)
+
+df$Speed[df$Speed_f==1]=50
+df$Speed[df$Speed_f==2]=100
+df$Speed[df$Speed_f==3]=450
+df$Speed[df$Speed_f==4]=2.5
+
+df
+
+# With the new df (We don't remove run 8)
 df$Device = as.factor(df$Device)
-df$Speed = as.factor(df$Speed)
 df$Browser = as.factor(df$Browser)
 new_df = 
 data.frame(Device = rep(df$Device,3),
 Speed = rep(df$Speed,3),
 Browser = rep(df$Browser,3),
-Response = c(df$Replicate.1,df$Replicate.2,df$Replicate.3),replicate = as.factor(c(rep(1,18),rep(2,18),rep(3,18))))
+Response,
+replicate = as.factor(c(rep(1,24),rep(2,24),rep(3,24))))
 
 
 par(mfrow=c(2,3))
@@ -30,19 +51,68 @@ summary(m1)
 
 anova(m1)
 
-plot(TukeyHSD(aov(m1)))
+```
 
-TukeyHSD(aov(m1))
+```{r}
+library(MASS)
 
+
+# Box-Cox Transformation
+boxcox(m1, plotit=T)
+boxcox(m1, plotit=T, lambda = seq(0, 0.8, by=0.1))
+
+# To see the exact best lambda:
+lmod1_bc <- boxcox(m1)
+lambda <- lmod1_bc$x[which.max(lmod1_bc$y)]
+lambda
+
+#2. We see the best lambda is 0.3030303, round to 0.3. Create a new transformed response using Box-Cox
+lambda <- 0.3
+Response_t <- (Response^lambda - 1) / lambda
+```
+
+```{r}
+# Re-do all analysis with transformed y
+                                                                                   
+# After removing 8, only has 17 rows
+# Set variables to factors
+df$Device = as.factor(df$Device)
+df$Browser = as.factor(df$Browser)
+
+# Create a new dataframe with the variables and transformed response
+new_df = 
+data.frame(Device = rep(df$Device,3),
+Speed = rep(df$Speed,3),
+Speed_f = rep(df$Speed_f,3),
+Browser = rep(df$Browser,3),
+Response_t,
+replicate = as.factor(c(rep(1,17),rep(2,17),rep(3,17))))
+
+# Plot
+par(mfrow=c(2,3))
+plot(data= new_df, Response_t~ as.numeric(Device) + as.numeric(Speed)+as.numeric(Browser))
+plot(data= new_df, Response_t~ (Device) + (Speed)+(Browser))
+par(mfrow=c(1,1))
+m1 <-lm(data=new_df, Response_t~(Device + Speed + Browser)^2 + replicate)
+summary(m1)
+
+anova(m1)
+
+# Cook's distance
+plot(m1,4)
+# Residual vs Fitted
 plot(m1)
 
-
+# Interaction plots
 y_bar = (df$Replicate.1 + df$Replicate.2 + df$Replicate.3)/3
-
-
 interaction.plot(df$Device, df$Speed, y_bar)
 interaction.plot(df$Device, df$Browser, y_bar)
 interaction.plot(df$Browser, df$Speed, y_bar)
+```
 
+```{r}
+# Tukey doesn't work with numeric factor
+#plot(TukeyHSD(aov(m1)))
 
+#TukeyHSD(aov(m1))
 ```
