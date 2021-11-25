@@ -39,6 +39,7 @@ Browser = rep(df$Browser,3),
 Response,
 replicate = as.factor(c(rep(1,24),rep(2,24),rep(3,24))))
 
+new_df <- new_df[-8,]
 
 par(mfrow=c(2,3))
 plot(data= new_df, Response~ as.numeric(Device) + as.numeric(Speed)+as.numeric(Browser))
@@ -67,7 +68,7 @@ lambda <- lmod1_bc$x[which.max(lmod1_bc$y)]
 lambda
 
 #2. We see the best lambda is 0.3030303, round to 0.3. Create a new transformed response using Box-Cox
-lambda <- 0.3
+lambda <- round(lambda,2)
 Response_t <- (Response^lambda - 1) / lambda
 ```
 
@@ -87,6 +88,8 @@ Speed_f = rep(df$Speed_f,3),
 Browser = rep(df$Browser,3),
 Response_t,
 replicate = as.factor(c(rep(1,24),rep(2,24),rep(3,24))))
+
+new_df <- new_df[-8,]
 
 # Plot
 par(mfrow=c(2,3))
