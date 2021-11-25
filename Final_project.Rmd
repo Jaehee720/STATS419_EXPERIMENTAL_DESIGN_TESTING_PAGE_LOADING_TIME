@@ -23,8 +23,8 @@ Response = c(df$Replicate.1,df$Replicate.2,df$Replicate.3)
 df$Speed_f=as.factor(df$Speed)
 
 df$Speed[df$Speed_f==1]=50
-df$Speed[df$Speed_f==2]=100
-df$Speed[df$Speed_f==3]=450
+df$Speed[df$Speed_f==2]=30
+df$Speed[df$Speed_f==3]=10
 df$Speed[df$Speed_f==4]=2.5
 
 df
