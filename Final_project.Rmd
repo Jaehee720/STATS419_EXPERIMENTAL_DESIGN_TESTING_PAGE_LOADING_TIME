@@ -86,7 +86,7 @@ Speed = rep(df$Speed,3),
 Speed_f = rep(df$Speed_f,3),
 Browser = rep(df$Browser,3),
 Response_t,
-replicate = as.factor(c(rep(1,17),rep(2,17),rep(3,17))))
+replicate = as.factor(c(rep(1,24),rep(2,24),rep(3,24))))
 
 # Plot
 par(mfrow=c(2,3))
