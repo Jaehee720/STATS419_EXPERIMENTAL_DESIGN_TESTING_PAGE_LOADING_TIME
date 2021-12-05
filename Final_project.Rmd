@@ -81,7 +81,6 @@ TukeyHSD(aov(m1))
 
 ## 3. Boxcox Transformation
 
-
 ```{r}
 new_df_8_deleted$Speed <- as.numeric(as.character(new_df_8_deleted$Speed))
 m1.1 <-lm(data=new_df_8_deleted, Response~(Device + Speed + Browser)^2 + replicate)
@@ -90,9 +89,7 @@ m1.1 <-lm(data=new_df_8_deleted, Response~(Device + Speed + Browser)^2 + replica
 lmod1_bc <- boxcox(m1.1)
 lambda <- lmod1_bc$x[which.max(lmod1_bc$y)]
 
-
-#2. We see the best lambda is 0.3030303, round to 0.3. Create a new transformed response using Box-Cox 
-#lambda is -0.747474747474747, not 0.3030303
+# lambda is -0.747474747474747
 paste0("lambda is ",lambda)
 new_df_8_deleted['Response_t'] <- (new_df_8_deleted$Response^lambda - 1) / lambda
 ```
