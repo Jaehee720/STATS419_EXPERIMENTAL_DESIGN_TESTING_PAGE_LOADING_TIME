@@ -11,10 +11,10 @@ output: pdf_document
 
 - Transformation of response
 
+## 1. Import the data and clean the data set to fit into the model
+
 ```{r}
 df = read.csv("df.csv")
-# remove point 8
-# df <- df[-8,]
 
 # Do initial Analysis and fit model
 Response = c(df$Replicate.1,df$Replicate.2,df$Replicate.3)
@@ -26,10 +26,7 @@ df$Speed[df$Speed_f==1]=50
 df$Speed[df$Speed_f==2]=30
 df$Speed[df$Speed_f==3]=10
 df$Speed[df$Speed_f==4]=2.5
-
-df
-
-# With the new df (We don't remove run 8)
+df$Speed = as.factor(df$Speed)
 df$Device = as.factor(df$Device)
 df$Browser = as.factor(df$Browser)
 new_df = 
@@ -38,84 +35,72 @@ Speed = rep(df$Speed,3),
 Browser = rep(df$Browser,3),
 Response,
 replicate = as.factor(c(rep(1,24),rep(2,24),rep(3,24))))
+```
 
-new_df <- new_df[-8,]
+## 1.1 EDA
 
+```{r}
 par(mfrow=c(2,3))
 plot(data= new_df, Response~ as.numeric(Device) + as.numeric(Speed)+as.numeric(Browser))
 plot(data= new_df, Response~ (Device) + (Speed)+(Browser))
-par(mfrow=c(1,1))
-m1 <-lm(data=new_df, Response~Device + Speed + Browser +
-          Device:Speed + Device:Browser + Speed:Browser +
-          replicate)
+```
+
+## 2. Fit into the model and Check the model with the model Assumptions and Tukey
+
+```{r}
+m1 <-lm(data=new_df, Response~(Device + Speed + Browser)^2 + replicate)
 summary(m1)
 
 anova(m1)
 
+par(mfrow=c(1,2))
+plot(m1,c(1,2))
+
+par(mfrow=c(2,2))
+plot(TukeyHSD(aov(m1)),las=2)
+
+TukeyHSD(aov(m1))
 ```
+
+## 3. Boxcox Transformation
+
 
 ```{r}
 library(MASS)
-
-
-# Box-Cox Transformation
-boxcox(m1, plotit=T)
-boxcox(m1, plotit=T, lambda = seq(0, 0.8, by=0.1))
+new_df_8_deleted <- new_df[-8,]
+new_df_8_deleted$Speed <- as.numeric(as.character(new_df_8_deleted$Speed))
+m1.1 <-lm(data=new_df_8_deleted, Response~(Device + Speed + Browser)^2 + replicate)
 
 # To see the exact best lambda:
-lmod1_bc <- boxcox(m1)
+lmod1_bc <- boxcox(m1.1)
 lambda <- lmod1_bc$x[which.max(lmod1_bc$y)]
-lambda
 
-#2. We see the best lambda is 0.3030303, round to 0.3. Create a new transformed response using Box-Cox
-lambda <- round(lambda,2)
-Response_t <- (Response^lambda - 1) / lambda
+
+#2. We see the best lambda is 0.3030303, round to 0.3. Create a new transformed response using Box-Cox 
+#lambda is -0.747474747474747, not 0.3030303
+paste0("lambda is ",lambda)
+new_df_8_deleted['Response_t'] <- (new_df_8_deleted$Response^lambda - 1) / lambda
 ```
 
+## 3.1 Fit the model after transformation and 
+
 ```{r}
-# Re-do all analysis with transformed y
-                                                                                   
-# After removing 8, only has 17 rows
-# Set variables to factors
-df$Device = as.factor(df$Device)
-df$Browser = as.factor(df$Browser)
+m2 <-lm(data=new_df_8_deleted, Response_t~(Device + Speed + Browser)^2 + replicate)
+summary(m2)
 
-# Create a new dataframe with the variables and transformed response
-new_df = 
-data.frame(Device = rep(df$Device,3),
-Speed = rep(df$Speed,3),
-Speed_f = rep(df$Speed_f,3),
-Browser = rep(df$Browser,3),
-Response_t,
-replicate = as.factor(c(rep(1,24),rep(2,24),rep(3,24))))
-
-new_df <- new_df[-8,]
-
-# Plot
-par(mfrow=c(2,3))
-plot(data= new_df, Response_t~ as.numeric(Device) + as.numeric(Speed)+as.numeric(Browser))
-plot(data= new_df, Response_t~ (Device) + (Speed)+(Browser))
-par(mfrow=c(1,1))
-m1 <-lm(data=new_df, Response_t~(Device + Speed + Browser)^2 + replicate)
-summary(m1)
-
-anova(m1)
+anova(m2)
 
 # Cook's distance
-plot(m1,4)
+par(mfrow=c(1,1))
+plot(m2,4)
+
 # Residual vs Fitted
-plot(m1)
+par(mfrow=c(1,2))
+plot(m2,c(1,2))
 
 # Interaction plots
 y_bar = (df$Replicate.1 + df$Replicate.2 + df$Replicate.3)/3
 interaction.plot(df$Device, df$Speed, y_bar)
 interaction.plot(df$Device, df$Browser, y_bar)
 interaction.plot(df$Browser, df$Speed, y_bar)
-```
-
-```{r}
-# Tukey doesn't work with numeric factor
-#plot(TukeyHSD(aov(m1)))
-
-#TukeyHSD(aov(m1))
 ```
