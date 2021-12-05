@@ -56,16 +56,13 @@ replicate = as.factor(c(rep(1,24),rep(2,24),rep(3,24))))
 par(mfrow=c(2,3))
 plot(data= new_df, Response~ as.numeric(Device) + as.numeric(Speed)+as.numeric(Browser))
 plot(data= new_df, Response~ (Device) + (Speed)+(Browser))
-
-# Delete outlier
-new_df_8_deleted <- new_df[-8,]
 ```
 
 ## 2. Fit into the model and Check the model with the model Assumptions and Tukey
 
 ```{r}
 # Create a linear model with two way interaction effects
-m1 <-lm(data=new_df_8_deleted, Response~(Device + Speed + Browser)^2 + replicate)
+m1 <-lm(data=new_df, Response~(Device + Speed + Browser)^2 + replicate)
 summary(m1)
 
 anova(m1)
@@ -82,6 +79,9 @@ TukeyHSD(aov(m1))
 ## 3. Boxcox Transformation
 
 ```{r}
+# Delete outlier
+new_df_8_deleted <- new_df[-8,]
+
 new_df_8_deleted$Speed <- as.numeric(as.character(new_df_8_deleted$Speed))
 m1.1 <-lm(data=new_df_8_deleted, Response~(Device + Speed + Browser)^2 + replicate)
 
