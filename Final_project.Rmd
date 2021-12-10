@@ -87,11 +87,18 @@ m1.1 <-lm(data=new_df_8_deleted, Response~(Device + Speed + Browser)^2 + replica
 
 # To see the exact best lambda:
 lmod1_bc <- boxcox(m1.1)
+# Zoom in to select an easier to intepretate lambda
+boxcox(m1.1, plotit=T, lambda = seq(-1, -0.5, by=0.1))
 lambda <- lmod1_bc$x[which.max(lmod1_bc$y)]
 
 # lambda is -0.747474747474747
 paste0("lambda is ",lambda)
+
+# We will select a cleaner lambda for intepretation as -0.7
+lambda <- -0.7
 new_df_8_deleted['Response_t'] <- (new_df_8_deleted$Response^lambda - 1) / lambda
+
+
 ```
 
 ## 3.1 Fit the model after transformation and 
