@@ -1,6 +1,6 @@
 ---
-title: "final_project_419"
-author: "Tyler Chun"
+title: "STATS 419 Final Project"
+author: "Tyler Chun, Jaehee Jeong, Yolanda Jin, Harrison DiStefano"
 date: "11/24/2021"
 output: pdf_document
 ---
